@@ -1,12 +1,23 @@
 library(tm)
 library(wordcloud)
 
+findFreqWords <- function(tweets){
+  text_corpus = VCorpus(VectorSource(tweets))
+  #create term-document matrix
+  tdm <- TermDocumentMatrix(text_corpus)
+  m <- as.matrix(tdm)
+  #sor words based on their frequences
+  v <- sort(rowSums(m),decreasing=TRUE)
+  return (v)
+}
+
+
 createWordCloud <-function(tweets){
 
   #create a corpus from character vectors
   text_corpus = VCorpus(VectorSource(tweets))
   #creeate vector of irrelevant words 
-  words <- c("f", "russiangrandprix", "russiangp", "russian", "grand","prix")
+  words <- c("f", "russia", "russiangrandprix", "russiangp", "russian", "grand","prix")
 
   # -TRANSFORMATIONS-
   #remove words stopwords and irrelevant words
