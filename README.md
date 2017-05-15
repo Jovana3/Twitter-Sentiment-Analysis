@@ -18,11 +18,11 @@ Velika količina podataka koja se svakog dana generiše putem interneta pripada 
 
 Svakodnevni porast i prisutnost mobilnih uređaja u svakodnevnom životu, u velikoj meri su olakšali pristup društvenim mrežama, i pojednostavili način deljenja informacija jednim klikom. Mikroblogovanje kao jedan  od oblika društvenih mreža se već uveliko integrisao u svakodnevni život i postao deo svakodnevne komunikacije i razmene informacija. Smatra se da su podaci proizvedeni mikroblogovanjem nedvosmisleni, brzi i pristupačni. Twitter, kao najpoznatiji servis za mikrobloging, izuzetno je pogodan je za procenu stava ogromnog broja korisnika. 
 
-Pored toga, podaci sa Twitter-a su posebno interesantni jer se poruke pojavljuju „brzinom misli“ odnosno dostupni su za preuzimanje momentalno, jer se sve odigrava u „skoro realnom vremenu“ (eng. near real-time).  
+Pored toga, podaci sa Twitter-a su posebno interesantni jer se poruke pojavljuju „brzinom misli“ odnosno dostupni su za preuzimanje momentalno, jer se sve odigrava u „skoro realnom vremenu“ (eng. *near real-time*).  
 
 ## Definicija anlalize sentimenta
 
-Analiza sentimenta Twitter poruke obuhvata process određivanja emotivnog tona na osnovu niza reči a koristi se kako bi se steklo razumevanje stava, mišljenja i emocija koji su izraženi u okviru online poruke. U ovom radu korišćena je binarna klasifikacija twitter poruke u dve klase: pozitivnu i negativnu.
+Analiza sentimenta Twitter poruke obuhvata process određivanja emotivnog tona na osnovu niza reči a koristi se kako bi se steklo razumevanje stava, mišljenja i emocija koji su izraženi u okviru *online* poruke. U ovom radu korišćena je binarna klasifikacija twitter poruke u dve klase: pozitivnu i negativnu.
 Često može biti neogređeno da li određena twitter poruka sadrži emociju. Takve twitter poruke nazivamo neutralnim. Međutim, u ovom radu neutralne poruke nisu uzete u razmatranje prilikom analize sentimenta.  
 
 Za treniranje određenog klasifikatora, najčešće su potrebni ručno obeleženi podaci. Međutim sa velikim brojem tema koje su diskutovane na Twitter-u bilo bi teško prikupiti veliki broj twitter poruka koji je potreban za trening klasifikatora. Stoga, u ovom radu korišćena je automatska ekstrakcija osećenja iz twitter poruka na osnovu emotikona. Na primer, emotikon :) ukazuje da se radi o poruci sa pozitivnom emocijom, dok emotikon :( ukazuje da je izražena negativna emocija.  
@@ -35,53 +35,64 @@ Twitter servis svima stavlja na raspolaganje sve informacije od onog momenta kad
 Upiti se šalju u obliku url adrese, i u sebi sadrže ključne reči pretrage i druge parametre. Naravno postoje ograničenja sa serverske strane o broju upita, odnosno zahteva koje se mogu uputiti u minuti. 
 U ovom radu korišćen je Twitter Search API, koji za razliku od Stream API-ja poseduje određena ograničenja prilikom slanja upita i pretraživanja podataka. Upiti koji pretražuju tvitove mogu da vrate maksimalno do 100 tvitova po jednom upitu. Takođe kao što je već naglašeno, nije moguće pretraživati stare tvitove, već samo one objavljene u proteklih sedam dana.
 
-Razvijene su mnogobrojne biblioteke za različite programske jezike koje koriste Twitter API za pretragu podataka, odnosno text mining. U ovom radu korišćene su biblioteke za R programski jezik među kojima su najbitnije: twitteR, tm(text mining), RTextTools, e1071 i caret.
+Razvijene su mnogobrojne biblioteke za različite programske jezike koje koriste Twitter API za pretragu podataka, odnosno text mining. U ovom radu korišćene su biblioteke za R programski jezik među kojima su najbitnije: *twitteR, tm(text mining), RTextTools, e1071 i caret*.
 Za preuzimanje podataka putem Twitter API servisa možemo izdvojiti sledeće glavne korake:
 
-•	Kreiranje  i registrovanje aplikacije na razvojnoj stranici Twitter-a
-•	Preuzimanje neophodnih biblioteka za R programski jezik
-•	Pokretanje upita i čuvanje podataka
+•	Kreiranje  i registrovanje aplikacije na razvojnoj stranici Twitter-a  
+•	Preuzimanje neophodnih biblioteka za R programski jezik  
+•	Pokretanje upita i čuvanje podataka  
 
 ### Kreiranje  i registrovanje aplikacije na razvojnoj stranici Twitter-a
 
-S obzirom da Twitter zahteva autorizaciju prilikom korišćenja svojih servisa, bilo je neophodno kreirati i registrovati aplikaciju na razvojnoj stranici Twitter-a. Postoji mogućnost i autorizacije bez aplikacije, ali su tada ograničenja veća, pa je zbog toga odlučeno  da se koristi OAuth 1 sistem autorizacije koji poseduje četiri parametra za pristup: 
-•	API key,
-•	API secret,
-•	Access Token 
-•	Access Token Secret.
+S obzirom da Twitter zahteva autorizaciju prilikom korišćenja svojih servisa, bilo je neophodno kreirati i registrovati aplikaciju na razvojnoj stranici Twitter-a. Postoji mogućnost i autorizacije bez aplikacije, ali su tada ograničenja veća, pa je zbog toga odlučeno  da se koristi OAuth 1 sistem autorizacije koji poseduje četiri parametra za pristup:  
+•	API key  
+•	API secret  
+•	Access Token   
+•	Access Token Secret  
+
 Ovi parametri su trajni kada se jednom kreiraju, pa ih je moguće koristiti dok god postoji registrovana aplikacija. 
-Nakon kreiranja aplikacije, preuzeti parametri su sačuvani dokumentu pod nazivom twitter_auth.csv.
+Nakon kreiranja aplikacije, preuzeti parametri su sačuvani dokumentu pod nazivom *twitter_auth.csv*.
 
-
-Slika 1 Sadržaj fajla twitter_auth.csv
+```R
+summary(twitter_auth)
+                      api_key                                               api_secret
+        fUwSn9X71bJx7fdogjNkPISWK:1              ecKEBsuTcYqUzc2CevwKSQ7vxNbpKAcjO9hIkov8KBfq2WdYKN:1   
+                      access_token                                    access_token_secret
+ 850259759039004674-acAlrgoJnk9T6JwUU9W1FaWcqvDrpI9:1     dMLzxOehsLFiIWVefQgNEiXvm101qzUem6JSDa7i3leco:1   
+```
 
 Autorizacija je uspostavljenja korišćenjem raspoložive funkcije setup_twitter_oauth() kojoj su prosleđeni dati parametri. 
 
 ### Izbor ključne reči za pretragu
 
-Biblioteka twitteR nudi mogućnost sagledavanja trenda, odnostno aktuelne teme za određeno geografsko područje. Funkcjia availableTrendLocations() vraća informacije o trenutno dostupnim lokacijama uz njihov woeid (where on Earth ID). 
-Stoga, možemo koristiti funkciju getTrends() koja prikazuje trenutne trendove za specificirani woeid tražene lokacije. Ukoliko želimo pretragu za ceo svet, woeid iznosi 1. 
+Biblioteka twitteR nudi mogućnost sagledavanja trenda, odnostno aktuelne teme za određeno geografsko područje. Funkcjia *availableTrendLocations()* vraća informacije o trenutno dostupnim lokacijama uz njihov *woeid* (where on Earth ID). 
+Stoga, možemo koristiti funkciju *getTrends()* koja prikazuje trenutne trendove za specificirani woeid tražene lokacije. Ukoliko želimo pretragu za ceo svet, *woeid* iznosi 1. 
 
 Radi kreiranja boljih klasifikatora cilj je prikupiti što veći uzorak. Zbog toga ćemo najpre izvrštiti analizu trendova u celom svetu, prema objašnjenom postupku, kako bismo prikupili što veći broj twitter poruka. Nakon sagledavanja aktuelnih tema, odlučeno je da ključna reč upita koji će se korisiti bude hashtag #RussianGP (Russian Grand Prix).
-
+
  
 ### Formiranje i pokretanje upita
 
-Da bismo mogli da prikupimo podatke putem Twitter API servisa neophodno je da ispoštujemo određen format Search upita koji servis zahteva. Za pretragu Twitter-a korišćena je raspoloživa funkcija searchTwitter().
+Da bismo mogli da prikupimo podatke putem Twitter API servisa neophodno je da ispoštujemo određen format Search upita koji servis zahteva. Za pretragu Twitter-a korišćena je raspoloživa funkcija *searchTwitter()*.
 Ukoliko želimo da izvršimo jednostavnu pretragu po nekoj ključnoj reči dovoljno je da funkciji prosledimo datu ključnu reč. Za komplikovanije pretrage moguće je koristiti različite operatore kojima se može promeniti ponašenja upita. U tabeli1 navedeni su neki od operatora koji su zajedno sa objašnjenim ponašanjem dostupni u Twitter Search API dokumentaciji. 
 
 
 
+Za preuzimanje twitter poruka koristili smo funkciju *searchTwitter()* koja nam je dostupna putem biblioteke *twitteR*. Data funkcija izvršava pretragu Twitter-a na osnovu prosleđenog stringa. Poseduje sledeću sintaksu:
 
-
-Za preuzimanje twitter poruka koristili smo funkciju searchTwitter() koja nam je dostupna putem biblioteke twitteR. Data funkcija izvršava pretragu Twitter-a na osnovu prosleđenog stringa. Poseduje sledeću sintaksu:
-
-searchTwitter (searchString, n=25, lang=NULL, since=NULL, until=NULL, locale=NULL, geocode=NULL, sinceID=NULL, maxID=NULL, resultType=NULL, retryOnRateLimit=120)
+```R
+searchTwitter (searchString, n=25, lang=NULL, since=NULL, until=NULL, locale=NULL,  
+              geocode=NULL, sinceID=NULL, maxID=NULL, resultType=NULL, retryOnRateLimit=120)
+```
 
 Kako bismo izvršili testiranje klasifikatora neophodno je da pripremo 2 dataset-a sa twitter porukama, gde je svaka od njih označena kao pozitivna ili negativna. Jedan dataset sadrži twitter poruke koje iskazuju pozitivni sentiment, dok će drugi sadžati poruke sa izraženim negativnim emocijama. Funkciju searchTwitter() pozivamo dva puta za preuzimanje pozitivnih i negativnih poruka respektivno. 
 Postoje različiti emotikoni kojima se može izraziti pozitivna emocija ( :), :-), :D, :-D), kao i negativna. Međutim, ako funkciji prosledimo samo jedan od pozitivnih emotikona :-), dobićemo kao rezultat twitter poruke sa svim pozitivnim emotikonima. Pored broja twitter poruka, funkcija prima parametar kojim specificiramo jezik na kom vršimo pretragu.
 
+```R
+tweets <- searchTwitter('#RussianGP :)', n=10000, lang='en')
 
+tweets2 <- searchTwitter('#RussianGP :(', n=10000, lang='en')
+```
 
 
 Date linije koda pokretane su nekoliko puta u cilju formiranja uzorka zadovoljavajućih dimenzija. Nakon prikupljanja twitter poruka formiran je dataframe-a sa strukturom koja je  prikazana u tabeli 2.
@@ -107,7 +118,7 @@ Broj ponovljenih poruka
 
 Prikupljene  twitter poruke sa izraženim pozitivnim I negativnim emocijama sačuvane su u CSV dokumentima positiveTweets.csv i negativeTweets.scv respektivno. 
 
-##Obrada twitter poruka
+## Obrada twitter poruka
 
 Za sprovođenje sentiment analize potrebno je najpre izvršiti obradu prikupljenih twitter poruka. 
 
@@ -136,7 +147,7 @@ Nakon prvobitne obrade i uklanjanja svih duplikata poruka, formiran je dataframe
 Za nastavak transformacije podataka koristimo funkciju tm_map() iz paketa tm. Data funkcija omogućava različite transformacije tekta kao što su uklanjanje nepotrebnog praznog prostora i eliminacija učestanih reči engleskog jezika – stopwords (članovi, veznici itd). 
 Za potrebe kreiranja korpusa i transformacije podataka formirana je dodatna funkcija createAndCleanCorpus().
 
-###Kreiranje korpusa
+### Kreiranje korpusa
 
 Da bismo pripremili tekst za obradu, kreiraćemo korpus koji se sastoji dokumenata među kojima svaki od njih predstavlja sadržaj određene twitter poruke. 
 
@@ -168,9 +179,10 @@ Za kreiranje wordcloud-a korišćen je paket wordcloud i istoimena funkcija kojo
 
 Parametri:
 
-•	scale - kontroliše razliku između najvećeg i najmanjeg fona
-•	max.words – ograničava broj reči koje će se prikazati
-•	rot.per – procenat vertikalnog teksta
+
+•	scale - kontroliše razliku između najvećeg i najmanjeg fona  
+•	max.words – ograničava broj reči koje će se prikazati  
+•	rot.per – procenat vertikalnog teksta  
 
 
 Slika 3 Wordcloud za pozitivne  twitter poruke
@@ -226,7 +238,7 @@ Za treniranje modela korišćena je funkcija naiveBayes iz biblioteke e1071. S o
 
 
 Nakon testiranja dobijenog klasifikatora na test dataset-u kreiramo matricu konfuzije sa rezultatima prikazanim na slici 6. 
-
+
 Slika 6 Rezultati dobijenog klasifikatora - Naivni Bajes
 
 ###  Kros validacija – Naivni Bajes
