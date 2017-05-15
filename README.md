@@ -1,6 +1,6 @@
 # Twitter-Sentiment-Analysis
 
-##Sadržaj 
+## Sadržaj 
 
 Količina informacija koja protiče društvenim mrežama svakodnevno se povećava, i predstavlja bogat izvor podataka, koji ako se pravilno semantički obradi, može biti veoma koristan u najrazličitijim oblastima. Cilj ovo projekta je analiza sentimenta Twitter poruka primenom algoritama mašinskog učenja. 
 
@@ -8,26 +8,26 @@ U radu su korišćeni sledeći algoritmi: Naivni Bajes, Maksimalna entropija i M
 
 Osnovna ideja je prikupljanje tekstualnih podataka u cilju konstrukcije i evaluacije različitih klasifikatora za analizu sentimenta Twitter poruka. Dobijeni klasifikatori su testirani i međusobno upoređeni u cilju pronalaska onog koji pruža najbolje performance klasifikacije Twitter poruka. 
 
-##Uvod
+## Uvod
 
 Korišćenje Interneta kao komunikacionog kanala omogućilo je da društvene mreže i servisi za mikroblogovanje postanu značajan potencijalni izvor znanja koje se kasnijom semantičkom obradom i analizom mogu koristiti u procesima donošenja odluka.
 
 Velika količina podataka koja se svakog dana generiše putem interneta pripada nestruktuiranim podacima tekstualnog tipa. Mašinsko učenje omogućava da sistem prepozna date reči i pripoji im neko smisleno značenje. 
 
-##Motiv za izbor Twitter aplikacije
+## Motiv za izbor Twitter aplikacije
 
 Svakodnevni porast i prisutnost mobilnih uređaja u svakodnevnom životu, u velikoj meri su olakšali pristup društvenim mrežama, i pojednostavili način deljenja informacija jednim klikom. Mikroblogovanje kao jedan  od oblika društvenih mreža se već uveliko integrisao u svakodnevni život i postao deo svakodnevne komunikacije i razmene informacija. Smatra se da su podaci proizvedeni mikroblogovanjem nedvosmisleni, brzi i pristupačni. Twitter, kao najpoznatiji servis za mikrobloging, izuzetno je pogodan je za procenu stava ogromnog broja korisnika. 
 
 Pored toga, podaci sa Twitter-a su posebno interesantni jer se poruke pojavljuju „brzinom misli“ odnosno dostupni su za preuzimanje momentalno, jer se sve odigrava u „skoro realnom vremenu“ (eng. near real-time).  
 
-##Definicija anlalize sentimenta
+## Definicija anlalize sentimenta
 
 Analiza sentimenta Twitter poruke obuhvata process određivanja emotivnog tona na osnovu niza reči a koristi se kako bi se steklo razumevanje stava, mišljenja i emocija koji su izraženi u okviru online poruke. U ovom radu korišćena je binarna klasifikacija twitter poruke u dve klase: pozitivnu i negativnu.
 Često može biti neogređeno da li određena twitter poruka sadrži emociju. Takve twitter poruke nazivamo neutralnim. Međutim, u ovom radu neutralne poruke nisu uzete u razmatranje prilikom analize sentimenta.  
 
 Za treniranje određenog klasifikatora, najčešće su potrebni ručno obeleženi podaci. Međutim sa velikim brojem tema koje su diskutovane na Twitter-u bilo bi teško prikupiti veliki broj twitter poruka koji je potreban za trening klasifikatora. Stoga, u ovom radu korišćena je automatska ekstrakcija osećenja iz twitter poruka na osnovu emotikona. Na primer, emotikon :) ukazuje da se radi o poruci sa pozitivnom emocijom, dok emotikon :( ukazuje da je izražena negativna emocija.  
 
-##Prikupljanje podataka putem Twitter API servisa
+## Prikupljanje podataka putem Twitter API servisa
 
 Twitter API (Application Programming Interface) je sistem za pristup Twitter serverima i bazi podataka radi ekstrakcije rezultata upita. 
 Twitter servis svima stavlja na raspolaganje sve informacije od onog momenta kada su objavljene. Putem Twitter API servisa omogućen je pristup popularnim ili nedavnim twitter porukama koje su objavljene u poslednjih 7 dana. Takođe moguće je pristupiti i podacima o geolokaciji svake Twitter poruke.  Na taj način omogućeno proučavanje kako tekstualnih tako i lokacijskih karakteristika online sadržaja.
@@ -42,7 +42,7 @@ Za preuzimanje podataka putem Twitter API servisa možemo izdvojiti sledeće gla
 •	Preuzimanje neophodnih biblioteka za R programski jezik
 •	Pokretanje upita i čuvanje podataka
 
-###Kreiranje  i registrovanje aplikacije na razvojnoj stranici Twitter-a
+### Kreiranje  i registrovanje aplikacije na razvojnoj stranici Twitter-a
 
 S obzirom da Twitter zahteva autorizaciju prilikom korišćenja svojih servisa, bilo je neophodno kreirati i registrovati aplikaciju na razvojnoj stranici Twitter-a. Postoji mogućnost i autorizacije bez aplikacije, ali su tada ograničenja veća, pa je zbog toga odlučeno  da se koristi OAuth 1 sistem autorizacije koji poseduje četiri parametra za pristup: 
 •	API key,
@@ -57,14 +57,15 @@ Slika 1 Sadržaj fajla twitter_auth.csv
 
 Autorizacija je uspostavljenja korišćenjem raspoložive funkcije setup_twitter_oauth() kojoj su prosleđeni dati parametri. 
 
-###Izbor ključne reči za pretragu
+### Izbor ključne reči za pretragu
+
 Biblioteka twitteR nudi mogućnost sagledavanja trenda, odnostno aktuelne teme za određeno geografsko područje. Funkcjia availableTrendLocations() vraća informacije o trenutno dostupnim lokacijama uz njihov woeid (where on Earth ID). 
 Stoga, možemo koristiti funkciju getTrends() koja prikazuje trenutne trendove za specificirani woeid tražene lokacije. Ukoliko želimo pretragu za ceo svet, woeid iznosi 1. 
 
 Radi kreiranja boljih klasifikatora cilj je prikupiti što veći uzorak. Zbog toga ćemo najpre izvrštiti analizu trendova u celom svetu, prema objašnjenom postupku, kako bismo prikupili što veći broj twitter poruka. Nakon sagledavanja aktuelnih tema, odlučeno je da ključna reč upita koji će se korisiti bude hashtag #RussianGP (Russian Grand Prix).
 
  
-###Formiranje i pokretanje upita
+### Formiranje i pokretanje upita
 
 Da bismo mogli da prikupimo podatke putem Twitter API servisa neophodno je da ispoštujemo određen format Search upita koji servis zahteva. Za pretragu Twitter-a korišćena je raspoloživa funkcija searchTwitter().
 Ukoliko želimo da izvršimo jednostavnu pretragu po nekoj ključnoj reči dovoljno je da funkciji prosledimo datu ključnu reč. Za komplikovanije pretrage moguće je koristiti različite operatore kojima se može promeniti ponašenja upita. U tabeli1 navedeni su neki od operatora koji su zajedno sa objašnjenim ponašanjem dostupni u Twitter Search API dokumentaciji. 
@@ -130,7 +131,7 @@ congrats to  on his first f win
 
 Nakon prvobitne obrade i uklanjanja svih duplikata poruka, formiran je dataframe koji integriše sve prikupljene poruke. Pored samog teksta poruke, dataframe sadrži i promenljivu class koja deklariše da li poruka sadrži pozitivne ili negativne emocije. Za pozitivne poruke, class ima vrednost pos, dok za negativne poruke njena vrednost  iznosi neg. Navedeni dataframe sačuvan je u dokumentu cleanTweets.csv.
 
-##Tokenizacija i transformacija podataka
+## Tokenizacija i transformacija podataka
 
 Za nastavak transformacije podataka koristimo funkciju tm_map() iz paketa tm. Data funkcija omogućava različite transformacije tekta kao što su uklanjanje nepotrebnog praznog prostora i eliminacija učestanih reči engleskog jezika – stopwords (članovi, veznici itd). 
 Za potrebe kreiranja korpusa i transformacije podataka formirana je dodatna funkcija createAndCleanCorpus().
@@ -140,7 +141,7 @@ Za potrebe kreiranja korpusa i transformacije podataka formirana je dodatna funk
 Da bismo pripremili tekst za obradu, kreiraćemo korpus koji se sastoji dokumenata među kojima svaki od njih predstavlja sadržaj određene twitter poruke. 
 
 
-###Utvrđivanje najfrekventnijih reči u korpusu
+### Utvrđivanje najfrekventnijih reči u korpusu
 
 U uvom pristupu svaku reč u dokumentu tretiramo kao atribut, dok je jedna twitter poruka predstavljena kao vektor atributa. Radi jednostavnosti, zanamarujemo redosled reči u poruci a fokusiramo se samo na broj pojavljivanja određene reči. 
 
@@ -161,7 +162,7 @@ Lista najfrekventnijih reči posle uklanjanja stopwords i nerelevantnih reči
 
 Tabela 5:  Lista najfrekventnijih reči sa brojem pojavljivanja
 
-##Kreiranje wordcloud-a
+## Kreiranje wordcloud-a
 Wordcloud predstavlja zgodan alat ukoliko želimo da naglasimo neke reči iz teksta koje se najčešće pojavljuju. Daje veći značaj onim rečima čija je frekvencija pojavljivanja u izvornom tekstu veća.
 Za kreiranje wordcloud-a korišćen je paket wordcloud i istoimena funkcija kojoj prosleđujemo korpus vector. 
 
@@ -176,7 +177,7 @@ Slika 3 Wordcloud za pozitivne  twitter poruke
 
 Slika 4 Wordcloud za negativne twitter poruke
 
-##Kreiranje klasifikatora
+## Kreiranje klasifikatora
 
 Problem sentiment analize rešavamo rešavamo korišćenjem sledećih algoritama mašinskog učenja: Naivni Bajes, Maksimalna entropija i Metoda potpornih vektora. 
 Naivni Bajes
@@ -184,7 +185,7 @@ Kako bismo kalsifikovali twitter poruke prema njihovom sentiment na pozitivne i 
 
 Formirani dataset sadrži ukupno 9182 twitter poruke gde svaka od njih ima oznaku sentimenta pri čemu su obe klase ravnomerno prisutne. 
 
-###Kreiranje korpusa document-term matrice
+### Kreiranje korpusa document-term matrice
 
 S obzirom da su u dataset-u najpre navedene sve pozitivne poruke, a zatim sve negativne, neophodno je da randomizacijom izvršimo njihovo premeštanje na slučajan način. Nakon toga kreiramo korpus u kome će svaka twitter poruka biti predstavljena kao jedan dokument. 
  
@@ -193,7 +194,7 @@ Za kreiranje korpusa i čišćenje podataka koristimo već kreiranu funkciju cre
 Potrebno je da formiramo Document-Term matricu koja odgovara dokumentima u kolekciji. Kolone matrice čine termini, a elementi odgovaraju frekvencijama svakog termina u određenoj twitter poruci. Za kreiranje DTM koristimo ugrađenu funkciju DocumentTermMatrix iz biblioteke tm. 
 
 
-###Particionisanje podataka
+### Particionisanje podataka
 
 Kostićemo funkciju createDataPartition() da  podelimo dati dataset na deo za trening i deo za testiranje prema razmeri 80:20.
 Treniraćemo Naïve Bayes klasifikator na trening dataset-u a zatim njegove performance proveriti na test dataset-u. Trenutna proporcija pozitivnih i negativnih poruka iznosti 50:50. 
@@ -203,7 +204,7 @@ Proverićemo da je tokom postupka particionisanja sačuvana ista proporcija u de
 Slika 5: Provera proporcije podataka između klasa nakon particionisanja
 
 
-###Selekcija atributa 
+### Selekcija atributa 
 
 Kreirana Document-term matrica (DTM) sadrži 5372 atributa. S obzirom da nisu svi atributi korisni za klasifikaciju, izvršićemo redukciju atributa ignorišući one reči koje se pojavljuju u manje od 50 twitter poruka. 
 
@@ -214,7 +215,7 @@ Ograničićemo DTM da koristi samo željene reči pomoću opcije dictionary.
 Nakon selekcije atributa dimenzije matrice za trening iznose 7346 x167 dok su dimenzije matrice za testiranje 1836 x167.
 
 
-###Algoritam Naivni Bajes
+### Algoritam Naivni Bajes
 
 Naivni Bajes, algoritam za klasifikaciju teksta u suštini predstavlja primenu Bajesove teoreme, sa jakim pretpostavkama nezavisnosti. 
 
@@ -228,7 +229,7 @@ Nakon testiranja dobijenog klasifikatora na test dataset-u kreiramo matricu konf
 
 Slika 6 Rezultati dobijenog klasifikatora - Naivni Bajes
 
-###Kros validacija – Naivni Bajes
+###  Kros validacija – Naivni Bajes
 
 Kros validacija predstavlja postupak kojim se originalni dataset deli na k jednakih delova (eng. folds). Na taj način trening se vrši nad k-1 delova dok jedan deo preostaje za validaciju. Dati process se ponavlja k puta tako što se svaki put različiti deo koristi za validaciju. Nakon toga izračunava se prosek svih iteracija. 
 
@@ -245,13 +246,13 @@ Rezultati dobijenog modela kros validacijom sa podelom na 10 delova (folds=10) p
 Slika 7 Rezultati kros validacije - Naivni Bajes
 
 
-###Razmatranje rezultata modela Naivni Bajes
+### Razmatranje rezultata modela Naivni Bajes
 
 Tačnost predviđanja modela klasifikacije iskazuje se procentom ispravno predviđenih instanci u odnosu na njihov ukupan broj. 
 Preciznost za ovaj model iznosi skromnih 42%. S obzirom na inače odlične performance ove metode, dobijene loše rezultate možemo jedino prepisati nereprezentativnim prikupljenim podacima. Stoga je planirani korak dalje analize ponoviti opisani postupak nad novim podacima. 
 
 
-##Metoda maksimalne entropije 
+## Metoda maksimalne entropije 
 
 Metoda maksimalne entropije predstavlja jedan od modela logističke regresije. Pripada klasi eksponencijalnih modela. Za razliku od Naivnog Bajesa, model maksimalne entropije ne pretpostavlja uslovnu nezavisnost među atributima. Metod maksimalne entropije zasniva se na principu maksimalne entropije i od svih modela koji odgovaraju trening podacima, bira onaj koji poseduje najveću entropiju. 
 
@@ -263,7 +264,7 @@ Kako bismo kreirali model maksimalne entropije koristimo biblioteku RTextTools, 
 
 Slika 8 Performanse algoritma - MAXENT
 
-###Kros validacija – Metoda maksimalne entropije 
+### Kros validacija – Metoda maksimalne entropije 
 
 Kao i kod metode Naivnog Bajesa i za metodu maksimalne entropije izvršena je kros validacija (folds=10). 
 Dobijeni su sledeći rezultati:
@@ -277,7 +278,7 @@ Slika 9 Rezultati kros validacije - MAXENT
 
 S obzirom da preciznost dobijenog modela maksimalne entropije iznosi 50.8% zaključujemo da je metod maksimalne entropije imao neznatno bolje performance od algoritma Naivni Bajes. 
 
-##Metoda potpornih vektora
+## Metoda potpornih vektora
 
 Metoda potpornih (podržavajućih) vektora predstavlja još jednu od tehnika klasifikacije. Osnovna ideja jeste naći hiper-ravan koja razdvaja podatke tako da su svi podaci jedne klase sa iste strane date ravni. 
 
@@ -291,7 +292,7 @@ Dobijene performance algoritma predstavljene su na slici 9.
 
 Slika 10 Performanse algoritma - SVM
 
-###Kros validacija – Metoda potpornih vektora 
+### Kros validacija – Metoda potpornih vektora 
 
 Nakon izvršene kros validacije za model zasnovan na potpornim vektorima dobijeni su sledeći rezultati:
 
@@ -300,7 +301,7 @@ Slika 11 Rezultati kros validacije - SVM
 
 
 
-##Poređenje dobijenih klasifikatora
+##  Poređenje dobijenih klasifikatora
 
 Nakon terstiranja klasifikatora Naivni Bajes, Maksimalna entropija i metoda potpornih vektora zaključeno je da najbolje performance pruža metoda maksimalne entropije. 
 Dobijene tačnosti datih algorima tokom kros validacije upoređene su u tabeli 6. 
@@ -313,9 +314,9 @@ Tačnost
 50.8%
 38.4%
 Tabela 6  Poređenje algoritama
- 
+ 
 
-##Literatura
+## Literatura
 [1] Go A, Bhyani R, Huang L, „Twitter Sentiment Classification using Distant Supervision“, pages 1-6 
 [2] Vieweg, S., Palen, L., Liu, S. B., Hughes, A. L., and Sutton, J., “Collective intelligence in disaster: An examination of the phenomenon in the aftermath of the 2007 Virginia Tech shootings.”, In Proceedings of the Information Systems for Crisis Response and Management Conference (ISCRAM). 2008.
 
