@@ -74,8 +74,10 @@ Radi kreiranja boljih klasifikatora cilj je prikupiti što veći uzorak. Zbog to
 ### Formiranje i pokretanje upita
 
 Da bismo mogli da prikupimo podatke putem Twitter API servisa neophodno je da ispoštujemo određen format Search upita koji servis zahteva. Za pretragu Twitter-a korišćena je raspoloživa funkcija *searchTwitter()*.
-Ukoliko želimo da izvršimo jednostavnu pretragu po nekoj ključnoj reči dovoljno je da funkciji prosledimo datu ključnu reč. Za komplikovanije pretrage moguće je koristiti različite operatore kojima se može promeniti ponašenja upita. U tabeli1 navedeni su neki od operatora koji su zajedno sa objašnjenim ponašanjem dostupni u Twitter Search API dokumentaciji. 
+Ukoliko želimo da izvršimo jednostavnu pretragu po nekoj ključnoj reči dovoljno je da funkciji prosledimo datu ključnu reč. Za komplikovanije pretrage moguće je koristiti različite operatore kojima se može promeniti ponašenja upita. U sledećoj tabeli navedeni su neki od operatora koji su zajedno sa objašnjenim ponašanjem dostupni u Twitter Search API dokumentaciji. 
 
+
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/operators.png)
 
 
 Za preuzimanje twitter poruka koristili smo funkciju *searchTwitter()* koja nam je dostupna putem biblioteke *twitteR*. Data funkcija izvršava pretragu Twitter-a na osnovu prosleđenog stringa. Poseduje sledeću sintaksu:
@@ -85,7 +87,7 @@ searchTwitter (searchString, n=25, lang=NULL, since=NULL, until=NULL, locale=NUL
               geocode=NULL, sinceID=NULL, maxID=NULL, resultType=NULL, retryOnRateLimit=120)
 ```
 
-Kako bismo izvršili testiranje klasifikatora neophodno je da pripremo 2 dataset-a sa twitter porukama, gde je svaka od njih označena kao pozitivna ili negativna. Jedan dataset sadrži twitter poruke koje iskazuju pozitivni sentiment, dok će drugi sadžati poruke sa izraženim negativnim emocijama. Funkciju searchTwitter() pozivamo dva puta za preuzimanje pozitivnih i negativnih poruka respektivno. 
+Kako bismo izvršili testiranje klasifikatora neophodno je da pripremo 2 dataset-a sa twitter porukama, gde je svaka od njih označena kao pozitivna ili negativna. Jedan dataset sadrži twitter poruke koje iskazuju pozitivni sentiment, dok će drugi sadžati poruke sa izraženim negativnim emocijama. Funkciju *searchTwitter()* pozivamo dva puta za preuzimanje pozitivnih i negativnih poruka respektivno. 
 Postoje različiti emotikoni kojima se može izraziti pozitivna emocija ( :), :-), :D, :-D), kao i negativna. Međutim, ako funkciji prosledimo samo jedan od pozitivnih emotikona :-), dobićemo kao rezultat twitter poruke sa svim pozitivnim emotikonima. Pored broja twitter poruka, funkcija prima parametar kojim specificiramo jezik na kom vršimo pretragu.
 
 ```R
@@ -95,28 +97,11 @@ tweets2 <- searchTwitter('#RussianGP :(', n=10000, lang='en')
 ```
 
 
-Date linije koda pokretane su nekoliko puta u cilju formiranja uzorka zadovoljavajućih dimenzija. Nakon prikupljanja twitter poruka formiran je dataframe-a sa strukturom koja je  prikazana u tabeli 2.
+Date linije koda pokretane su nekoliko puta u cilju formiranja uzorka zadovoljavajućih dimenzija. Nakon prikupljanja twitter poruka formiran je dataframe-a sa strukturom koja je  prikazana u sledećoj tabeli.
 
-NAZIV PROMENLJIVE
-TIP PROMENLJIVE
-OPIS PROMENLJIVE
-created
-POSIXct
-Datum i vreme nastanka twitter poruke
-id
-Character
-ID poruke
-text
-Character
-Sadržaj poruke
-screenName
-Character
-Korisničko ime
-retweetCount
-Numeric
-Broj ponovljenih poruka
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/struktura.png)
 
-Prikupljene  twitter poruke sa izraženim pozitivnim I negativnim emocijama sačuvane su u CSV dokumentima positiveTweets.csv i negativeTweets.scv respektivno. 
+Prikupljene  twitter poruke sa izraženim pozitivnim I negativnim emocijama sačuvane su u CSV dokumentima *positiveTweets.csv* i *negativeTweets.scv* respektivno. 
 
 ## Obrada twitter poruka
 
@@ -126,52 +111,97 @@ Mnoge twitter poruke u sebi sadrže linkove, oznake drugih osoba, cifre, znake i
 
 Takođe, uklonjeni su “retweetovi”, koji ukazuju na kopiranje nečije twitter poruke i postavljanja preko drugog naloga. Ukoliko bi se takve twitter poruke uzele u razmatranje, tada bi jedna ista poruka bila ubrojana više puta, što želimo da izbegnemo. NJih prepoznajemo pomoću oznake RT na početku poruke. Nakon odstranjivanja date oznake uklanjamo sve ponovljene twitter poruke. Na taj način sigurni smo da je svaka poruka među prikupljenim podacima unikatna. 
 
+U nastavku su navedeni primeri twitter poruka pre obrade:  
 
-Congratulations to newest Flying Finn! Below every one is a shark 😊 Making a great race out of a boring track/tyre… https://t.co/BkR9deJFyQ
-RT @niki01103: The bigest suprise of the day: First row for #ScuderiaFerrari 😮#RussianGP #Formula1 #mifolyikittgyöngyösön #sochigp https://…
-RT @redbullracing: Congrats to @ValtteriBottas on his first #F1 win #RussianGP #ГранПриРоссии https://t.co/W4R4ZgFw05
-U tabeli 3 navedeni su primeri twitter poruka pre obrade
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/tw1.png)  
 
-
-Sadržaj navedenih poruka nakon primarne obrade prikazan je u tabeli 4.
+U nastavku je prikazan sadržaj navedenih poruka nakon primarne obrade.  
  
-congratulations to newest flying finn below every one is a shark  making a great race out of a boring tracktyre
-the bigest suprise of the day first row for scuderiaferrari  formula mifolyikittgyngysn sochigp
-congrats to  on his first f win  
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/tw2.png)  
 
 
-Nakon prvobitne obrade i uklanjanja svih duplikata poruka, formiran je dataframe koji integriše sve prikupljene poruke. Pored samog teksta poruke, dataframe sadrži i promenljivu class koja deklariše da li poruka sadrži pozitivne ili negativne emocije. Za pozitivne poruke, class ima vrednost pos, dok za negativne poruke njena vrednost  iznosi neg. Navedeni dataframe sačuvan je u dokumentu cleanTweets.csv.
+Nakon prvobitne obrade i uklanjanja svih duplikata poruka, formiran je dataframe koji integriše sve prikupljene poruke. Pored samog teksta poruke, dataframe sadrži i promenljivu *class* koja deklariše da li poruka sadrži pozitivne ili negativne emocije. Za pozitivne poruke, class ima vrednost *pos*, dok za negativne poruke njena vrednost iznosi *neg*. Navedeni dataframe sačuvan je u dokumentu *cleanTweets.csv*.
 
 ## Tokenizacija i transformacija podataka
 
-Za nastavak transformacije podataka koristimo funkciju tm_map() iz paketa tm. Data funkcija omogućava različite transformacije tekta kao što su uklanjanje nepotrebnog praznog prostora i eliminacija učestanih reči engleskog jezika – stopwords (članovi, veznici itd). 
-Za potrebe kreiranja korpusa i transformacije podataka formirana je dodatna funkcija createAndCleanCorpus().
+Za nastavak transformacije podataka koristimo funkciju *tm_map()* iz paketa *tm*. Data funkcija omogućava različite transformacije tekta kao što su uklanjanje nepotrebnog praznog prostora i eliminacija učestanih reči engleskog jezika – stopwords (članovi, veznici itd). 
+Za potrebe kreiranja korpusa i transformacije podataka formirana je dodatna funkcija *createAndCleanCorpus()*.
+
+```R
+createAndCleanCorpus <-function(tweets){
+  
+  #create a corpus from character vectors
+  text_corpus = VCorpus(VectorSource(tweets))
+  #creeate vector of irrelevant words 
+  irr_words <- c("f", "russia", "russiangrandprix", "russiangp", "russian", "grand","prix")
+  
+  # -TRANSFORMATIONS-
+  #remove words stopwords and irrelevant words
+  clean_corpus <- text_corpus %>% 
+    tm_map(removeWords, c(stopwords("english"), irr_words)) %>% 
+    #eliminate extra whitespaces
+    tm_map(stripWhitespace)
+  return (clean_corpus)
+  
+}
+```
 
 ### Kreiranje korpusa
 
 Da bismo pripremili tekst za obradu, kreiraćemo korpus koji se sastoji dokumenata među kojima svaki od njih predstavlja sadržaj određene twitter poruke. 
 
+```R
+  #create a corpus from character vectors
+  text_corpus = VCorpus(VectorSource(tweets))
+```  
 
 ### Utvrđivanje najfrekventnijih reči u korpusu
 
 U uvom pristupu svaku reč u dokumentu tretiramo kao atribut, dok je jedna twitter poruka predstavljena kao vektor atributa. Radi jednostavnosti, zanamarujemo redosled reči u poruci a fokusiramo se samo na broj pojavljivanja određene reči. 
 
 Ovo postižemo kreiranjem term-document matrice. Redovi matrice odnose se na termine, dok kolone odgovaraju dokumentima u kolekciji. 
+```R
+<<TermDocumentMatrix (terms: 5468, documents: 9182)>>
+Non-/sparse entries: 79355/50127821
+Sparsity           : 100%
+Maximal term length: 33
+Weighting          : term frequency (tf)
+Sample             :
+        Docs
+Terms    1525 3140 4234 4253 4323 438 7245 8819 8840 8910
+  and       0    1    1    0    0   1    1    1    0    0
+  bottas    0    1    0    0    0   0    1    0    0    0
+  for       0    0    0    0    2   1    0    0    0    2
+  from      0    0    0    0    0   0    0    0    0    0
+  kimi      0    0    0    0    0   0    0    0    0    0
+  latest    0    0    0    0    0   0    0    0    0    0
+  race      0    0    1    1    0   1    0    1    1    0
+  the       1    0    3    0    0   0    0    3    0    0
+  win       0    0    0    0    0   0    0    0    0    0
+  with      0    1    0    0    0   0    1    0    0    0
+```
+
+Kreirana je dodatna funkcija *findFreqWords()* koja omogućava pronalazak najfrekventnijih reči među svim twitter porukama. 
 
 
-Slika 2 Term - document matrica
-
-Kreirana je dodatna funkcija findFreqWords() koja omogućava pronalazak najfrekventnijih reči među svim twitter porukama. 
+```R
+findFreqWords <- function(tweets){
+  text_corpus = VCorpus(VectorSource(tweets))
+  #create term-document matrix
+  tdm <- TermDocumentMatrix(text_corpus)
+  m <- as.matrix(tdm)
+  #sort words based on their frequences
+  v <- sort(rowSums(m),decreasing=TRUE)
+  df <- data.frame(word = names(v),freq=v)
+  return (df)
+}
+``` 
 Sagledavanjem delimično pročišćenih podataka, ustanovljeno je da postoje reči čija je frekvencija pojavljivanja velika ali nemaju veći značaj na samu analizu sentimenta. 
-Stoga odlučeno je da sledeće reči eliminišu iz twitter poruka: russian, russia, grand, prix, f, russiangrandprix, russiangp.
-U tabeli 5 prikazane su promenjene liste najfrekventnijih reči posle ukljanjanja StopWords i datih nerelevantnih reči. 
+Stoga odlučeno je da sledeće reči eliminišu iz twitter poruka: *russian, russia, grand, prix, f, russiangrandprix, russiangp.*
+U nastavku prikazane su promenjene liste najfrekventnijih reči posle ukljanjanja StopWords i datih nerelevantnih reči. 
 
-Lista najfrekventnijih reči na početku
-Lista najfrekventnijih reči posle uklanjanja stopwords
-Lista najfrekventnijih reči posle uklanjanja stopwords i nerelevantnih reči
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/freq.png)
 
-
-Tabela 5:  Lista najfrekventnijih reči sa brojem pojavljivanja
 
 ## Kreiranje wordcloud-a
 Wordcloud predstavlja zgodan alat ukoliko želimo da naglasimo neke reči iz teksta koje se najčešće pojavljuju. Daje veći značaj onim rečima čija je frekvencija pojavljivanja u izvornom tekstu veća.
@@ -182,13 +212,17 @@ Parametri:
 
 •	scale - kontroliše razliku između najvećeg i najmanjeg fona  
 •	max.words – ograničava broj reči koje će se prikazati  
-•	rot.per – procenat vertikalnog teksta  
+•	rot.per – procenat vertikalnog teksta.  
+  
+  
+Wordcloud za pozitivne  twitter poruke:  
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/WCNegativeTweets.png)  
 
+Wordcloud za negativne twitter poruke:  
 
-Slika 3 Wordcloud za pozitivne  twitter poruke
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/WCPositiveTweets.png)  
 
-Slika 4 Wordcloud za negativne twitter poruke
-
+  
 ## Kreiranje klasifikatora
 
 Problem sentiment analize rešavamo rešavamo korišćenjem sledećih algoritama mašinskog učenja: Naivni Bajes, Maksimalna entropija i Metoda potpornih vektora. 
@@ -201,20 +235,30 @@ Formirani dataset sadrži ukupno 9182 twitter poruke gde svaka od njih ima oznak
 
 S obzirom da su u dataset-u najpre navedene sve pozitivne poruke, a zatim sve negativne, neophodno je da randomizacijom izvršimo njihovo premeštanje na slučajan način. Nakon toga kreiramo korpus u kome će svaka twitter poruka biti predstavljena kao jedan dokument. 
  
-Za kreiranje korpusa i čišćenje podataka koristimo već kreiranu funkciju createAndCleanCorpus().
+Za kreiranje korpusa i čišćenje podataka koristimo već kreiranu funkciju *createAndCleanCorpus()*.
 
-Potrebno je da formiramo Document-Term matricu koja odgovara dokumentima u kolekciji. Kolone matrice čine termini, a elementi odgovaraju frekvencijama svakog termina u određenoj twitter poruci. Za kreiranje DTM koristimo ugrađenu funkciju DocumentTermMatrix iz biblioteke tm. 
+Potrebno je da formiramo Document-Term matricu koja odgovara dokumentima u kolekciji. Kolone matrice čine termini, a elementi odgovaraju frekvencijama svakog termina u određenoj twitter poruci. Za kreiranje DTM koristimo ugrađenu funkciju *DocumentTermMatrix* iz biblioteke *tm*. 
 
 
 ### Particionisanje podataka
 
-Kostićemo funkciju createDataPartition() da  podelimo dati dataset na deo za trening i deo za testiranje prema razmeri 80:20.
+Kostićemo funkciju *createDataPartition()* da  podelimo dati dataset na deo za trening i deo za testiranje prema razmeri 80:20.
 Treniraćemo Naïve Bayes klasifikator na trening dataset-u a zatim njegove performance proveriti na test dataset-u. Trenutna proporcija pozitivnih i negativnih poruka iznosti 50:50. 
-Proverićemo da je tokom postupka particionisanja sačuvana ista proporcija u delu za trening i obuku. Kako bismo to proverili kreirana je dodatna funkcija frqtab().
+Proverićemo da je tokom postupka particionisanja sačuvana ista proporcija u delu za trening i obuku. Kako bismo to proverili kreirana je dodatna funkcija *frqtab()*.
+
+```R
+frqtab <- function(x, caption) {
+  round(100*prop.table(table(x)), 1)
+}
 
 
-Slika 5: Provera proporcije podataka između klasa nakon particionisanja
+|  &nbsp;   |  Original  |  Training set  |  Test set  |
+|:---------:|:----------:|:--------------:|:----------:|
+|  **neg**  |     50     |       50       |    49.9    |
+|  **pos**  |     50     |       50       |    50.1    |
 
+Table: Comparison of sentiment class frequencies among datasets
+```
 
 ### Selekcija atributa 
 
@@ -222,9 +266,15 @@ Kreirana Document-term matrica (DTM) sadrži 5372 atributa. S obzirom da nisu sv
 
 Ograničićemo DTM da koristi samo željene reči pomoću opcije dictionary. 
 
+```R
+freq <- findFreqTerms(dtm_train, 50)
+length((freq))
 
+dtm_train_nb <- DocumentTermMatrix(clean_corpus_train, control=list(dictionary = freq))
+dim(dtm_train_nb)
+```
 
-Nakon selekcije atributa dimenzije matrice za trening iznose 7346 x167 dok su dimenzije matrice za testiranje 1836 x167.
+Nakon selekcije atributa dimenzije matrice za trening iznose *7346 x167* dok su dimenzije matrice za testiranje *1836 x167*.
 
 
 ### Algoritam Naivni Bajes
@@ -233,14 +283,42 @@ Naivni Bajes, algoritam za klasifikaciju teksta u suštini predstavlja primenu B
 
 U ovom radu korišćena je varijacija Multinominalnog Naivnog Bajes-a koji je poznat kao binarizovani (Boolean feature) Naivni Bajes. Frekvencije termina zamenjujemo jednostavnim prisustvom tj. odsustvom određenog termina. 
 
-Za treniranje modela korišćena je funkcija naiveBayes iz biblioteke e1071. S obzirom da Naivni Bajes izračunava proizvode verovatnoća, moramo obezbediti način da izbegnemo dodeljivanje nule onim rečima koje nisu prisutne u poruci. Zbog toda koristimo parameter laplace, koji ima vrednost 1. 
+Za treniranje modela korišćena je funkcija naiveBayes iz biblioteke *e1071*. S obzirom da Naivni Bajes izračunava proizvode verovatnoća, moramo obezbediti način da izbegnemo dodeljivanje nule onim rečima koje nisu prisutne u poruci. Zbog toda koristimo parameter laplace, koji ima vrednost 1. 
 
+```R
+# use the NB classifier we built to make predictions on the test set.
+system.time(prediction <- predict(classifierNB, newdata=testNB))
+```
 
+Nakon testiranja dobijenog klasifikatora na test dataset-u kreiramo matricu konfuzije:
 
-Nakon testiranja dobijenog klasifikatora na test dataset-u kreiramo matricu konfuzije sa rezultatima prikazanim na slici 6. 
+```R
+Confusion Matrix and Statistics
 
-Slika 6 Rezultati dobijenog klasifikatora - Naivni Bajes
-
+          Reference
+Prediction neg pos
+       neg 501 604
+       pos 416 315
+                                          
+               Accuracy : 0.4444          
+                 95% CI : (0.4215, 0.4675)
+    No Information Rate : 0.5005          
+    P-Value [Acc > NIR] : 1               
+                                          
+                  Kappa : -0.1109         
+ Mcnemar's Test P-Value : 4.764e-09       
+                                          
+            Sensitivity : 0.5463          
+            Specificity : 0.3428          
+         Pos Pred Value : 0.4534          
+         Neg Pred Value : 0.4309          
+             Prevalence : 0.4995          
+         Detection Rate : 0.2729          
+   Detection Prevalence : 0.6019          
+      Balanced Accuracy : 0.4446          
+                                          
+       'Positive' Class : neg  
+```
 ###  Kros validacija – Naivni Bajes
 
 Kros validacija predstavlja postupak kojim se originalni dataset deli na k jednakih delova (eng. folds). Na taj način trening se vrši nad k-1 delova dok jedan deo preostaje za validaciju. Dati process se ponavlja k puta tako što se svaki put različiti deo koristi za validaciju. Nakon toga izračunava se prosek svih iteracija. 
@@ -248,21 +326,36 @@ Kros validacija predstavlja postupak kojim se originalni dataset deli na k jedna
 Cilj kros validacije je da se spreči problem overfitting-a, a da se predikcije učine generalnijim. 
 Za potrebe kros validacije, korišćena je bibliotaka caret koja pruža funkcionalnost stratifikovane kros-validacije što znači da se u svakom od dobijenih delova nalazi odgovarajuća proporcija podataka među klasama. 
 
-Rezultati dobijenog modela kros validacijom sa podelom na 10 delova (folds=10) prikazani su na slici 7. Tačnost ovog modela Naivnog Bajesa iznosi 44.9%.
+U nastavnku nalaze se rezultati dobijenog modela kros validacijom sa podelom na 10 delova (folds=10). Tačnost ovog modela Naivnog Bajesa iznosi 45.9%.
 
+```R
+Naive Bayes 
 
+7346 samples
+ 167 predictor
+   2 classes: 'neg', 'pos' 
 
+No pre-processing
+Resampling: Cross-Validated (10 fold) 
+Summary of sample sizes: 6611, 6611, 6611, 6612, 6611, 6611, ... 
+Resampling results across tuning parameters:
 
+  usekernel  Accuracy  Kappa      
+  FALSE      0.45902   -0.08180484
+   TRUE      0.45902   -0.08180484
 
-
-Slika 7 Rezultati kros validacije - Naivni Bajes
-
+Tuning parameter 'fL' was held constant at a value of 0
+Tuning parameter
+ 'adjust' was held constant at a value of 1
+Accuracy was used to select the optimal model using  the largest value.
+The final values used for the model were fL = 0, usekernel = FALSE and adjust = 1.
+```
 
 ### Razmatranje rezultata modela Naivni Bajes
 
 Tačnost predviđanja modela klasifikacije iskazuje se procentom ispravno predviđenih instanci u odnosu na njihov ukupan broj. 
-Preciznost za ovaj model iznosi skromnih 42%. S obzirom na inače odlične performance ove metode, dobijene loše rezultate možemo jedino prepisati nereprezentativnim prikupljenim podacima. Stoga je planirani korak dalje analize ponoviti opisani postupak nad novim podacima. 
-
+Preciznost za ovaj model iznosi skromnih 44.4%. S obzirom na inače odlične performance ove metode, dobijene loše rezultate možemo jedino prepisati nereprezentativnim prikupljenim podacima. Stoga je planirani korak dalje analize ponoviti opisani postupak nad novim podacima. 
+
 
 ## Metoda maksimalne entropije 
 
@@ -271,20 +364,36 @@ Metoda maksimalne entropije predstavlja jedan od modela logističke regresije. P
 Ova metoda se osim za problem analize sentimenta često koristi za široku klasu problema klasifikacije teksta kao što su detekcija jezika, klasifikacija tema i druge. 
 
 
-Kako bismo kreirali model maksimalne entropije koristimo biblioteku RTextTools, koja u pozadini koristi već korišćenu biblioteku e1071. Dobijene performanse algoritma prikazane su na slici 8. 
+Kako bismo kreirali model maksimalne entropije koristimo biblioteku *RTextTools*, koja u pozadini koristi već korišćenu biblioteku *e1071*. Dobijene performanse algoritma prikazane su u nastavku. 
 
+```R
+ALGORITHM PERFORMANCE
 
-Slika 8 Performanse algoritma - MAXENT
+MAXENTROPY_PRECISION    MAXENTROPY_RECALL    MAXENTROPY_FSCORE 
+                0.44                 0.44                 0.44 
+```
 
 ### Kros validacija – Metoda maksimalne entropije 
 
 Kao i kod metode Naivnog Bajesa i za metodu maksimalne entropije izvršena je kros validacija (folds=10). 
 Dobijeni su sledeći rezultati:
 
+```R
+Fold 1 Out of Sample Accuracy = 0.4922395
+Fold 2 Out of Sample Accuracy = 0.5083857
+Fold 3 Out of Sample Accuracy = 0.4793028
+Fold 4 Out of Sample Accuracy = 0.5080808
+Fold 5 Out of Sample Accuracy = 0.504662
+Fold 6 Out of Sample Accuracy = 0.5163105
+Fold 7 Out of Sample Accuracy = 0.5286195
+Fold 8 Out of Sample Accuracy = 0.5113872
+Fold 9 Out of Sample Accuracy = 0.5276008
+Fold 10 Out of Sample Accuracy = 0.5114679
 
-Slika 9 Rezultati kros validacije - MAXENT
+$meanAccuracy
+[1] 0.5088057
 
-
+```
 
 
 
@@ -296,36 +405,45 @@ Metoda potpornih (podržavajućih) vektora predstavlja još jednu od tehnika kla
 
 U ovom radu korišćena je metoda potpornih vektora sa linearnim jezgrom. Zadatak treniranja podataka podrazumeva pronalazak optimalne linearne ravni koja razdvaja podatke za trening. Optimalna hiper-ravan je ona koja poseduje maksimalnu marginu odnosno rastojanje među podacima za trening. Kao rezultat dobijamo hiper-ravan koja je potpuno određena podskupom podataka za trening koji se nazivaju podržavajući (potporni) vektori. 
 
-Na sličan način kao i kod metoda maksimalne verodostojnosti kreiran je klasifikator zasnovan na metodi potpornih vektora korišćenjem R biblioteke RTextTools.
+Na sličan način kao i kod metoda maksimalne verodostojnosti kreiran je klasifikator zasnovan na metodi potpornih vektora korišćenjem R biblioteke *RTextTools*.
 
-Dobijene performance algoritma predstavljene su na slici 9.
+Dobijene su sledeće performance algoritma:
 
 
+```R
+ALGORITHM PERFORMANCE
 
-Slika 10 Performanse algoritma - SVM
+SVM_PRECISION    SVM_RECALL    SVM_FSCORE 
+        0.580         0.575         0.575 
+```
 
 ### Kros validacija – Metoda potpornih vektora 
 
 Nakon izvršene kros validacije za model zasnovan na potpornim vektorima dobijeni su sledeći rezultati:
 
+```R
+Fold 1 Out of Sample Accuracy = 0.3859275
+Fold 2 Out of Sample Accuracy = 0.3901345
+Fold 3 Out of Sample Accuracy = 0.3665944
+Fold 4 Out of Sample Accuracy = 0.377014
+Fold 5 Out of Sample Accuracy = 0.3624309
+Fold 6 Out of Sample Accuracy = 0.3732162
+Fold 7 Out of Sample Accuracy = 0.3737143
+Fold 8 Out of Sample Accuracy = 0.3729508
+Fold 9 Out of Sample Accuracy = 0.4015234
+Fold 10 Out of Sample Accuracy = 0.3800657
 
-Slika 11 Rezultati kros validacije - SVM
-
+$meanAccuracy
+[1] 0.3783572
+```
 
 
 ##  Poređenje dobijenih klasifikatora
 
 Nakon terstiranja klasifikatora Naivni Bajes, Maksimalna entropija i metoda potpornih vektora zaključeno je da najbolje performance pruža metoda maksimalne entropije. 
-Dobijene tačnosti datih algorima tokom kros validacije upoređene su u tabeli 6. 
+U nastavku upoređene su dobijene tačnosti datih algorima tokom kros validacije:
 
-Naivni Bajes
-Maksimalna entropija
-Metoda potpornih vektora
-Tačnost
-40.9%
-50.8%
-38.4%
-Tabela 6  Poređenje algoritama
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/comparation.png)
  
 
 ## Literatura
