@@ -70,7 +70,7 @@ Radi kreiranja boljih klasifikatora, cilj je prikupiti što veći uzorak. Zbog t
 
 Da bismo mogli da prikupimo podatke putem Twitter API servisa, neophodno je da ispoštujemo određen format upita koji servis zahteva. Za pretragu Twitter-a korišćena je raspoloživa funkcija *searchTwitter()*. Ukoliko želimo da izvršimo jednostavnu pretragu po nekoj ključnoj reči, dovoljno je da funkciji prosledimo datu ključnu reč. Za komplikovanije pretrage moguće je koristiti različite operatore kojima se može promeniti ponašenja upita. U sledećoj tabeli navedeni su neki od operatora koji su zajedno sa objašnjenim ponašanjem dostupni u Twitter Search API dokumentaciji. 
 
-![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/operators.png)
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/img/operators.png)
 
 Funkcija *searchTwitter()* izvršava pretragu Twitter-a na osnovu prosleđenog stringa. Poseduje sledeću sintaksu:
 
@@ -91,7 +91,7 @@ tweets2 <- searchTwitter('#RussianGP :(', n=10000, lang='en')
 
 Nakon prikupljanja Twitter poruka formiran je dataframe-a sa strukturom koja je  prikazana u sledećoj tabeli.
 
-![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/struktura.png)
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/img/struktura.png)
 
 Prikupljene Twitter poruke sa izraženim pozitivnim i negativnim emocijama sačuvane su u CSV dokumentima *positiveTweets.csv* i *negativeTweets.scv* respektivno. 
 
@@ -176,7 +176,7 @@ Sagledavanjem delimično pročišćenih podataka, ustanovljeno je da postoje re�
 
 U nastavku su prikazane liste najfrekventnijih reči posle ukljanjanja StopWords i nerelevantnih reči. 
 
-![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/freq.png)
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/img/freq.png)
 
 Formirani dataset sadrži ukupno 9182 twitter poruke gde svaka od njih ima oznaku sentimenta pri čemu su obe klase ravnomerno prisutne.
 
@@ -189,11 +189,11 @@ Parametri:
 •	rot.per – procenat vertikalnog teksta.  
 
 Wordcloud za pozitivne Twitter poruke:  
-![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/WCNegativeTweets.png)  
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/img/WCNegativeTweets.png)  
 
 Wordcloud za negativne Twitter poruke:  
 
-![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/WCPositiveTweets.png)  
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/img/WCPositiveTweets.png)  
   
 ## Kreiranje klasifikatora
 
@@ -389,7 +389,7 @@ Tačnost algoritma Naivni Bajes iznosi skromnih 44.4% u slučaju kada radimo pod
 
 Nakon terstiranja klasifikatora Naivni Bajes, Maksimalna entropija i metoda potpornih vektora zaključeno je da najbolje performance pruža metoda maksimalne entropije. U nastavku upoređene su dobijene tačnosti datih algorima tokom kros validacije:
 
-![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/comparation.png)
+![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/img/comparation.png)
  
 
 ## Literatura
