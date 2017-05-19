@@ -15,7 +15,7 @@ library(RTextTools)
 
 # AUTHORIZATION
 # access authorization keys from twitter 
-twitter_auth <-read.csv('twitter_auth.csv')
+twitter_auth <-read.csv('data/twitter_auth.csv')
 setup_twitter_oauth(twitter_auth$api_key, twitter_auth$api_secret, twitter_auth$access_token, twitter_auth$access_token_secret)
 
 
@@ -36,7 +36,7 @@ positive_tweets <-twListToDF(tweets)
 positive_tweets <- subset(positive_tweets, select=c("created", "id", "text", "screenName", "retweetCount"))
 
 #write tweets to cvs file
-write_excel_csv(positive_tweets, 'positiveTweets.csv')
+write_excel_csv(positive_tweets, 'data/positiveTweets.csv')
 
 #Getting  negative tweets
 tweets2 <- searchTwitter('#RussianGP :(', n=10000, lang='en')
@@ -44,7 +44,7 @@ negative_tweets <-twListToDF(tweets2)
 negative_tweets <- subset(negative_tweets, select=c("created", "id", "text", "screenName", "retweetCount"))
 
 #write tweets to cvs file
-write_excel_csv(negative_tweets, 'negativeTweets.csv')
+write_excel_csv(negative_tweets, 'data/negativeTweets.csv')
 
 
 # --CLEANING TWEETS--
@@ -88,7 +88,7 @@ label_vec <- c(rep("pos",  nrows_pos), rep.int("neg", nrows_neg))
 clean_tweets_df <- data.frame(text = all_tweets_clean, class = label_vec, stringsAsFactors = FALSE)
 
 #write processed tweets to csv file
-write_excel_csv(clean_tweets_df, 'cleanTweets.csv')
+write_excel_csv(clean_tweets_df, 'data/cleanTweets.csv')
 
 
 findFreqWords <- function(tweets){
@@ -273,7 +273,7 @@ summary(analytics)
 # 10-folds cross validation
 cross_validate(container, 10, "MAXENT")
 
-ß
+
 # $meanAccuracy
 # [1] 0.5082098
 
