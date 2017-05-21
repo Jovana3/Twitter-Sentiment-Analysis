@@ -22,7 +22,7 @@ Pored toga, podaci sa Twitter-a su posebno interesantni jer se poruke pojavljuju
 
 Analiza sentimenta teksta obuhvata process određivanja emotivnog tona na osnovu niza reči, a koristi se kako bi se steklo razumevanje stava, mišljenja i emocija koji su izraženi u okviru teksta. U ovom radu korišćena je binarna klasifikacija Twitter poruka u dve klase: pozitivnu i negativnu.
 
-Često može biti neodređeno da li određena twitter poruka sadrži emociju. Takve twitter poruke nazivamo neutralnim. Međutim, u ovom radu neutralne poruke nisu uzete u razmatranje prilikom analize sentimenta.  
+Često može biti neodređeno da li određena twitter poruka sadrži emociju. Takve twitter poruke nazivamo neutralnim [2]. Međutim, u ovom radu neutralne poruke nisu uzete u razmatranje prilikom analize sentimenta.  
 
 ## Podaci
 
@@ -95,13 +95,13 @@ Nakon prikupljanja Twitter poruka formiran je dataframe-a sa strukturom koja je 
 
 Prikupljene Twitter poruke sa izraženim pozitivnim i negativnim emocijama sačuvane su u CSV dokumentima *positiveTweets.csv* i *negativeTweets.scv* respektivno. 
 
-## Predprocesiranje Twitter poruka
+## Pretprocesiranje Twitter poruka
 
 Mnoge twitter poruke u sebi sadrže linkove, spominjanja drugih osoba, cifre, znake interpunkcija i mnoge druge simbole koji nisu značajni za analizu sentimenta. Zbog toga je neophodno iz teksta svake Twitter poruke ukloniti sve reči i simbole koji nisu od značaja za samu sentiment analizu. 
 
 Takođe, uklonjeni su “retweetovi”, koji ukazuju na ponovno publikovanja nečije Twitter poruke. Ukoliko bi se takve twitter poruke uzele u razmatranje, tada bi jedna ista poruka bila ubrojana više puta, što želimo da izbegnemo. Takve poruke prepoznajemo pomoću oznake RT na početku sadržaja poruke.
 
-Nakon predprocesiranja i uklanjanja svih duplikata poruka, formiran je dataframe koji sadrži sve prikupljene poruke. Pored samog teksta poruke, dataframe sadrži i promenljivu *class* koja deklariše da li poruka sadrži pozitivne ili negativne emocije. Za pozitivne poruke, class ima vrednost *pos*, dok za negativne poruke njena vrednost iznosi *neg*. Navedeni dataframe sačuvan je u dokumentu *cleanTweets.csv*.
+Nakon pretprocesiranja i uklanjanja svih duplikata poruka, formiran je dataframe koji sadrži sve prikupljene poruke. Pored samog teksta poruke, dataframe sadrži i promenljivu *class* koja deklariše da li poruka sadrži pozitivne ili negativne emocije. Za pozitivne poruke, class ima vrednost *pos*, dok za negativne poruke njena vrednost iznosi *neg*. Navedeni dataframe sačuvan je u dokumentu *cleanTweets.csv*.
 
 Za nastavak transformacije podataka koristimo funkciju *tm_map()* iz paketa *tm*. Data funkcija omogućava različite transformacije teksta kao što su uklanjanje nepotrebnog praznog prostora i eliminacija učestanih reči engleskog jezika – stopwords (članovi, veznici itd). 
 Za potrebe kreiranja korpusa i transformacije podataka formirana je dodatna funkcija *createAndCleanCorpus()*.
@@ -199,7 +199,6 @@ Wordcloud za negativne Twitter poruke:
 
 Problem sentiment analize rešavamo rešavamo korišćenjem sledećih algoritama mašinskog učenja: Naivni Bajes, Maksimalna entropija i Metoda potpornih vektora.
 
-### Naivni Bajes
 
 #### Kreiranje korpusa document-term matrice
 
@@ -208,6 +207,23 @@ S obzirom da su u dataset-u najpre navedene sve pozitivne poruke, a zatim sve ne
 Za kreiranje korpusa i čišćenje podataka koristimo već kreiranu funkciju *createAndCleanCorpus()*.
 
 Potrebno je da formiramo Document-Term matricu (DTM) koja odgovara dokumentima u kolekciji. Kolone matrice čine termini, a elementi odgovaraju frekvencijama svakog termina u određenoj Twitter poruci. Za kreiranje DTM koristimo ugrađenu funkciju *DocumentTermMatrix* iz biblioteke *tm*. 
+
+### Selekcija atributa 
+
+Kreirana Document-term matrica (DTM) sadrži 5372 atributa. S obzirom da nisu svi atributi korisni za klasifikaciju, izvršićemo redukciju atributa ignorišući one reči koje se pojavljuju u manje od 50 twitter poruka. 
+
+Ograničićemo DTM da koristi samo željene reči pomoću opcije *dictionary*. 
+
+```R
+freq <- findFreqTerms(dtm_train, 50)
+length((freq))
+
+dtm_train_nb <- DocumentTermMatrix(clean_corpus_train, control=list(dictionary = freq))
+dim(dtm_train_nb)
+```
+
+Nakon selekcije atributa dimenzije matrice za trening iznose *7346 x167* dok su dimenzije matrice za testiranje *1836 x167*.
+
 
 #### Particionisanje podataka
 
@@ -227,21 +243,7 @@ frqtab <- function(x, caption) {
 Table: Comparison of sentiment class frequencies among datasets
 ```
 
-### Selekcija atributa 
 
-Kreirana Document-term matrica (DTM) sadrži 5372 atributa. S obzirom da nisu svi atributi korisni za klasifikaciju, izvršićemo redukciju atributa ignorišući one reči koje se pojavljuju u manje od 50 twitter poruka. 
-
-Ograničićemo DTM da koristi samo željene reči pomoću opcije *dictionary*. 
-
-```R
-freq <- findFreqTerms(dtm_train, 50)
-length((freq))
-
-dtm_train_nb <- DocumentTermMatrix(clean_corpus_train, control=list(dictionary = freq))
-dim(dtm_train_nb)
-```
-
-Nakon selekcije atributa dimenzije matrice za trening iznose *7346 x167* dok su dimenzije matrice za testiranje *1836 x167*.
 
 ### Algoritam Naivni Bajes
 
@@ -346,11 +348,12 @@ $meanAccuracy
 
 ```
 
-S obzirom da tačnost dobijenog modela maksimalne entropije iznosi 50.8%, zaključujemo da je metod maksimalne entropije imao neznatno bolje performance od algoritma Naivni Bajes. 
+Tačnost dobijenog modela maksimalne entropije iznosi 50.8%.
+
 
 ### Metoda potpornih vektora (Support Vector Machine)
 
-Algoritam Support Vector Machine predstavlja još jednu od tehnika klasifikacije. Osnovna ideja jeste naći hiper-ravan koja razdvaja podatke tako da su svi podaci jedne klase sa iste strane date ravni. U ovom radu korišćena je metoda potpornih vektora sa linearnim jezgrom. Zadatak treniranja podataka podrazumeva pronalazak optimalne linearne ravni koja razdvaja podatke za trening. Optimalna hiper-ravan je ona koja poseduje maksimalnu marginu odnosno rastojanje među podacima za trening. Kao rezultat dobijamo hiper-ravan koja je potpuno određena podskupom podataka za trening koji se nazivaju podržavajući (potporni) vektori. 
+Algoritam Support Vector Machine predstavlja još jednu od tehnika klasifikacije. Osnovna ideja jeste naći hiper-ravan koja razdvaja podatke tako da su svi podaci jedne klase sa iste strane date ravni. U ovom radu korišćena je metoda potpornih vektora sa linearnim jezgrom. Zadatak treniranja podataka podrazumeva pronalazak optimalne linearne ravni koja razdvaja podatke za trening. Optimalna hiper-ravan je ona koja poseduje maksimalnu marginu odnosno rastojanje među podacima za trening. Kao rezultat dobijamo hiper-ravan koja je potpuno određena podskupom podataka za trening koji se nazivaju podržavajući (potporni) vektori [3].
 
 Na sličan način kao i kod metoda maksimalne verodostojnosti, kreiran je klasifikator zasnovan na metodi potpornih vektora korišćenjem R biblioteke *RTextTools*. Preciznost ovog modela iznosi 58%.
 
@@ -366,19 +369,19 @@ SVM_PRECISION    SVM_RECALL    SVM_FSCORE
 Nakon izvršene kros validacije za model zasnovan na potpornim vektorima dobijeni su sledeći rezultati:
 
 ```R
-Fold 1 Out of Sample Accuracy = 0.3859275
-Fold 2 Out of Sample Accuracy = 0.3901345
-Fold 3 Out of Sample Accuracy = 0.3665944
-Fold 4 Out of Sample Accuracy = 0.377014
-Fold 5 Out of Sample Accuracy = 0.3624309
-Fold 6 Out of Sample Accuracy = 0.3732162
-Fold 7 Out of Sample Accuracy = 0.3737143
-Fold 8 Out of Sample Accuracy = 0.3729508
-Fold 9 Out of Sample Accuracy = 0.4015234
-Fold 10 Out of Sample Accuracy = 0.3800657
+Fold 1 Out of Sample Accuracy = 0.406547
+Fold 2 Out of Sample Accuracy = 0.3825199
+Fold 3 Out of Sample Accuracy = 0.3845316
+Fold 4 Out of Sample Accuracy = 0.3660714
+Fold 5 Out of Sample Accuracy = 0.378178
+Fold 6 Out of Sample Accuracy = 0.3910186
+Fold 7 Out of Sample Accuracy = 0.3740933
+Fold 8 Out of Sample Accuracy = 0.3744493
+Fold 9 Out of Sample Accuracy = 0.3698482
+Fold 10 Out of Sample Accuracy = 0.4054054
 
 $meanAccuracy
-[1] 0.3783572
+[1] 0.3832663
 ```
 
 ## Tumačenje rezultata
@@ -387,15 +390,17 @@ Tačnost predviđanja modela klasifikacije iskazuje se procentom ispravno predvi
 
 Tačnost algoritma Naivni Bajes iznosi skromnih 44.4% u slučaju kada radimo podelu dataseta na trening i test dataset u odnosu 80:20. U slučaju primene kros/validacije, tačnost iznosi 45.9%. Dobijene loše rezultate možemo jedino prepisati nereprezentativnim prikupljenim podacima. Stoga je planirani korak dalje analize ponoviti opisani postupak nad novim podacima. 
 
-Nakon terstiranja klasifikatora Naivni Bajes, Maksimalna entropija i metoda potpornih vektora zaključeno je da najbolje performance pruža metoda maksimalne entropije. U nastavku upoređene su dobijene tačnosti datih algorima tokom kros validacije:
+Primenom kros/validacije za metodu Maksimalne Entropije, tačnost modela iznosi 50.8% dok je za metoda Potpornih vektora dobijena tačnost 37.8%. 
+Iz datih rezultata zaključujemo da,  najbolje performanse daje Metoda Maksimalne entropije. 
+S obzirom da tačnost modela maksimalne entropije iznosi 50.8%, zaključujemo da je metod maksimalne entropije imao neznatno bolje performance od algoritma Naivni Bajes. 
 
-![alt text](https://github.com/Jovana3/Twitter-Sentiment-Analysis/blob/master/img/comparation.png)
+Nakon terstiranja klasifikatora Naivni Bajes, Maksimalna entropija i metoda potpornih vektora zaključeno je da najbolje performanse, kada je u pitanju kros validacija, pruža metoda maksimalne entropije. U nastavku upoređene su dobijene tačnosti datih algorima tokom kros validacije:
+
  
 
 ## Literatura
 [1] Go A, Bhyani R, Huang L, „Twitter Sentiment Classification using Distant Supervision“, pages 1-6 
 
-[2] Vieweg, S., Palen, L., Liu, S. B., Hughes, A. L., and Sutton, J., “Collective intelligence in disaster: An examination of the phenomenon in the aftermath of the 2007 Virginia Tech shootings.”, In Proceedings of the Information Systems for Crisis Response and Management Conference (ISCRAM). 2008.
+[2] Bo Pang and Lillian Lee Sentiment analysis and opinion mining, Foundations and Tredns in Information Retrieval, Volume 2 Issue 1-2, January 2008  
 
-[3] Bo Pang and Lillian Lee Sentiment analysis and opinion mining, Foundations and Tredns in Information Retrieval, Volume 2 Issue 1-2, January 2008. 
-[4] B. Pang, L. Lee, and S. Vaithyanathan, Thumbs up? Sentiment classification using machine learning techniques, in Proceedings of the Conference on Empirical Methods in Natural Language Processing (EMNLP), pp. 79–86, 2002. 
+[3] B. Pang, L. Lee, and S. Vaithyanathan, Thumbs up? Sentiment classification using machine learning techniques, pp. 79–86, 2002. 
