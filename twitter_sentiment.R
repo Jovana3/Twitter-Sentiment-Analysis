@@ -135,8 +135,6 @@ clean_corpus_neg <- createAndCleanCorpus(neg_tweets_clean)
 createWordCloud(clean_corpus_neg)
 
 
-# NAIVE BAYES
-
 #randomize the dataset
 set.seed(1)
 clean_tweets_df <- clean_tweets_df[sample(nrow(clean_tweets_df)), ]
@@ -147,8 +145,12 @@ clean_tweets_df$class <- as.factor(clean_tweets_df$class)
 # create and clean up the corpus
 clean_corpus <-createAndCleanCorpus(clean_tweets_df$text)
 
+# --FEATURE SELECTION--
+freq <- findFreqTerms(dtm_train, 50)
+length((freq))
+
 # create Document-Term matrix
-dtm <- DocumentTermMatrix(clean_corpus)
+dtm<- DocumentTermMatrix(clean_corpus, control=list(dictionary = freq))
 
 #partitioning the data for training and testing purposes
 train_index <- createDataPartition(clean_tweets_df$class, p=0.80, list=FALSE)
@@ -176,16 +178,6 @@ colnames(df) <- c("Original", "Training set", "Test set")
 pander(df, style="rmarkdown",caption=paste0("Comparison of sentiment class frequencies among datasets"))
 
 
-# --FEATURE SELECTION--
-freq <- findFreqTerms(dtm_train, 50)
-length((freq))
-
-dtm_train_nb <- DocumentTermMatrix(clean_corpus_train, control=list(dictionary = freq))
-dim(dtm_train_nb)
-
-dtm_test_nb <- DocumentTermMatrix(clean_corpus_test, control=list(dictionary = freq))
-dim(dtm_test_nb)
-
 # function to convert the word frequencies to yes (presence) and no (absence) labels
 convert_count <- function(x) {
   y <- ifelse(x > 0, 1,0)
@@ -196,6 +188,9 @@ convert_count <- function(x) {
 # apply the convert_count function to get final training and testing DTMs
 trainNB <- apply(dtm_train_nb, 2, convert_count)
 testNB <- apply(dtm_test_nb, 2, convert_count)
+
+# NAIVE BAYES
+
 
 # train the  Naive Bayes classifier
 system.time(classifierNB <- naiveBayes(trainNB, df_train$class, laplace = 1))
@@ -211,7 +206,7 @@ conf_mat <- confusionMatrix(prediction, df_test$class)
 
 # prediction Accuracy
 conf_mat$overall['Accuracy']
-# 0.4232  
+# 0.444 
 
 # Train NB classifier using caret package with 10-fold cross validation 
 control <- trainControl(method="cv", 10)
@@ -219,21 +214,26 @@ set.seed(2)
 modelNB <- train(trainNB, df_train$class, method="nb", trControl=control)
 modelNB
 
-# Naive Bayes 
+#Naive Bayes 
 
-# 6888 samples
-# 264 predictor
-# 2 classes: 'neg', 'pos' 
+#7346 samples
+#167 predictor
+#2 classes: 'neg', 'pos' 
 
-# No pre-processing
-# Resampling: Cross-Validated (10 fold) 
-# Summary of sample sizes: 6200, 6198, 6199, 6200, 6199, 6199, ... 
-# Resampling results across tuning parameters:
+#No pre-processing
+#Resampling: Cross-Validated (10 fold) 
+#Summary of sample sizes: 6611, 6611, 6611, 6612, 6611, 6611, ... 
+#Resampling results across tuning parameters:
+  
+#  usekernel  Accuracy  Kappa      
+#FALSE      0.45902   -0.08180484
+#TRUE      0.45902   -0.08180484
 
-# usekernel  Accuracy   Kappa     
-# FALSE      0.4464215  -0.1071566
-# TRUE      0.4464215  -0.1071566
-
+#Tuning parameter 'fL' was held constant at a value of 0
+#Tuning parameter
+#'adjust' was held constant at a value of 1
+#Accuracy was used to select the optimal model using  the largest value.
+#The final values used for the model were fL = 0, usekernel = FALSE and adjust = 1.
 
 # Testing the predictions
 predictNB <- predict(modelNB, testNB)
@@ -244,10 +244,10 @@ cm
 
 # Reference
 # Prediction neg pos
-# neg 502 695
-# pos 644 453
+#neg 498 605
+#pos 419 314
 
-# Accuracy : 0.4163   
+# Accuracy : 0.4423   
 
 
 # MAX ENTROPY
@@ -270,6 +270,7 @@ summary(analytics)
 
 # MAXENTROPY_PRECISION    MAXENTROPY_RECALL    MAXENTROPY_FSCORE 
 #                0.440                0.440                0.435  
+
 # 10-folds cross validation
 cross_validate(container, 10, "MAXENT")
 
