@@ -8,8 +8,6 @@ library(wordcloud)
 library(caret)
 library(RTextTools)
 
-
-
 # AUTHORIZATION
 # access authorization keys from twitter 
 twitter_auth <-read.csv('data/twitter_auth.csv')
@@ -21,24 +19,23 @@ setup_twitter_oauth(twitter_auth$api_key, twitter_auth$api_secret, twitter_auth$
 trends <-availableTrendLocations()
 
 #Getting trend in the wordl (woeid -> 1)
-worldTrend <-getTrends(44418)
+worldTrend <-getTrends(1)
 
 #view trend limit
 rateLimit <-getCurRateLimitInfo()
 
 #Getting  positive tweets
-#+#NowPlaying+exclude:retweets'
-tweetsPosS <- searchTwitter(':)+storm+exclude:retweets', n=3000, lang='en')
+tweetsPos<- searchTwitter(':)+storm+exclude:retweets', n=3000, lang='en')
 class(tweets)
-positive_tweets <-twListToDF(tweetsPosS)
+positive_tweets <-twListToDF(tweetsPos)
 positive_tweets <- subset(positive_tweets, select=c("created", "id", "text", "screenName", "retweetCount"))
 
 #write tweets to cvs file
 write_excel_csv(positive_tweets, 'data/positiveTweetsStorm.csv')
 
 #Getting  negative tweets
-tweetsNegS <- searchTwitter(':(+storm+exclude:retweets', n=3000, lang='en')
-negative_tweets <-twListToDF(tweetsNegS)
+tweetsNeg<- searchTwitter(':(+storm+exclude:retweets', n=3000, lang='en')
+negative_tweets <-twListToDF(tweetsNeg)
 negative_tweets <- subset(negative_tweets, select=c("created", "id", "text", "screenName", "retweetCount"))
 
 #write tweets to cvs file
@@ -99,7 +96,7 @@ write_excel_csv(clean_tweets_df, 'data/cleanTweetsStorm.csv')
 
 
 findFreqWords <- function(tweets){
-  text_corpus = VCorpus(VectorSource(tweets))
+  text_corpus <- VCorpus(VectorSource(tweets))
   #create term-document matrix
   tdm <- TermDocumentMatrix(text_corpus)
   m <- as.matrix(tdm)
@@ -158,7 +155,7 @@ freq <- findFreqTerms(dtm, 5)
 length((freq))
 
 # create Document-Term matrix
-dtm<- DocumentTermMatrix(clean_corpus, control=list(dictionary = freq))
+dtm2<- DocumentTermMatrix(clean_corpus, control=list(dictionary = freq))
 
 # function to convert the word frequencies to yes (presence) and no (absence) labels
 convert_count <- function(x) {
@@ -168,7 +165,7 @@ convert_count <- function(x) {
 }
 
 # apply the convert_count function to get final DTM
-dtm <- apply(dtm, 2, convert_count)
+dtm2 <- apply(dtm2, 2, convert_count)
 
 
 # NAIVE BAYES
@@ -177,7 +174,7 @@ dtm <- apply(dtm, 2, convert_count)
 # Train NB classifier using caret package with 10-fold cross validation 
 control <- trainControl(method="cv", 10)
 set.seed(2)
-modelNB <- train(dtm, clean_tweets_df$class, method="nb", trControl=control)
+modelNB <- train(dtm2, clean_tweets_df$class, method="nb", trControl=control)
 modelNB
 
 #Naive Bayes 
@@ -203,16 +200,16 @@ modelNB
 # The final values used for the model were fL = 0, usekernel = FALSE and adjust = 1.
  
 
-
+# MAX ENTROPY
 # create and train Max Entropy model
-container <-create_container(dtm, as.numeric(clean_tweets_df$class), trainSize = 1:900, 
-                             testSize = 901:1186, virgin = FALSE)  
+container <-create_container(dtm, as.numeric(clean_tweets_df$class), trainSize = 1:880, 
+                             testSize = 881:1186, virgin = FALSE)  
 
 # 10-folds cross validation
 cross_validate(container, 10, "MAXENT")
 
 # $meanAccuracy
-# [1] 0.8941199
+#[1] 0.9204108
 
 
 
@@ -225,11 +222,11 @@ modelSVM
 
 # No pre-processing
 # Resampling: Cross-Validated (10 fold) 
-# Summary of sample sizes: 1067, 1068, 1068, 1067, 1067, 1068, ... 
+# Summary of sample sizes: 1067, 1068, 1067, 1068, 1067, 1067, ... 
 # Resampling results:
   
 #  Accuracy   Kappa    
-# 0.7040949  0.1829585
+# 0.7597422  0.2480407
 
 # Tuning parameter 'C' was held constant at a value of 1
 
